@@ -2,6 +2,14 @@
 
 > **A fully production-ready AI SaaS for writing, generating, and optimizing blog posts.** Built with Next.js (App Router), this application is a self-contained SaaS boilerplate complete with user authentication, database-backed folder categorization, an interactive Rich Text WYSIWYG editor, and an advanced AI writer engine powered by MuAPI.
 
+## 🌐 Project Repository
+
+**GitHub Repository:** [github.com/SamurAIGPT/blogger-cms](https://github.com/SamurAIGPT/blogger-cms)
+
+**Live Demo:** [blogger-cms-psi.vercel.app](https://blogger-cms-psi.vercel.app/)
+
+Sign in with Google to explore the blog writer workspace, category folders, custom rich text editor, and credit purchase flows directly.
+
 ---
 
 Blogger CMS is a highly optimized SaaS application designed to help bloggers, copywriters, and content agencies create and manage SEO-friendly articles. It features a modern, clean interface, real-time AI content generation, an advanced custom rich text editor, and integrated billing structures out of the box.
