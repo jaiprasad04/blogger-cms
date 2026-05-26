@@ -1,6 +1,9 @@
-# ✍️ Blogger CMS — AI-Powered Blog Writer & SEO Optimization SaaS
+# ✍️ Blogger CMS — Open-Source AI Blog Writer & SEO Content Management System (Free Jasper / Copy.ai Alternative)
 
-> **A fully production-ready AI SaaS for writing, generating, and optimizing blog posts.** Built with Next.js (App Router), this application is a self-contained SaaS boilerplate complete with user authentication, database-backed folder categorization, an interactive Rich Text WYSIWYG editor, and an advanced AI writer engine powered by MuAPI.
+> **Write, generate, and SEO-optimize long-form blog posts inside a Notion-style WYSIWYG editor.** A production-ready, self-hostable Next.js SaaS boilerplate with folder categorization, AI-powered draft generation, meta-tag management, focus keyword tracking, and built-in Stripe billing. A free open-source alternative to Jasper, Copy.ai, Surfer SEO, Outranking, and Writesonic — powered by the MuAPI AI engine.
+
+**Tech stack:** Next.js 14 (App Router) · Prisma · PostgreSQL · NextAuth (Google OAuth) · Stripe · Tailwind CSS · Custom Rich Text Editor · OpenAI gpt-5-chat · MuAPI
+**Use cases:** Content marketing teams · Affiliate blog networks · SEO content production · Agency blog management · Multi-author publications · Programmatic SEO · Niche site building · Newsletter writing · Documentation drafting
 
 ## 🌐 Project Repository
 
@@ -8,7 +11,7 @@
 
 **Live Demo:** [blogger-cms-psi.vercel.app](https://blogger-cms-psi.vercel.app/)
 
-Sign in with Google to explore the blog writer workspace, category folders, custom rich text editor, and credit purchase flows directly.
+Sign in with Google to explore the blog writer workspace, category folders, rich text editor, and credit purchase flows.
 
 ---
 
