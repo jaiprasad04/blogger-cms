@@ -1,220 +1,121 @@
 "use client";
 
-import { useState, useEffect, Suspense } from "react";
-import { useSearchParams } from "next/navigation";
-import { useSession, signIn } from "next-auth/react";
-import { FaCoins, FaCheck, FaSpinner, FaTimesCircle, FaCheckCircle } from "react-icons/fa";
+import { useSession } from "next-auth/react";
+import { useState } from "react";
+import Navbar from "@/components/Navbar";
+import Footer from "@/components/Footer";
+import { FaCheck, FaInfoCircle } from "react-icons/fa";
+import axios from "axios";
+import toast, { Toaster } from "react-hot-toast";
 
-const plans = [
-  {
-    id: "starter",
-    name: "Starter Pack",
-    credits: 100,
-    price: "$10",
-    description: "Ideal for beginners or small personal blogs.",
-    features: [
-      "100 AI Generation Credits",
-      "Access to gpt-5-chat AI Writer",
-      "Full SEO Panel Settings",
-      "HTML Export Support",
-      "Basic Support",
-    ],
-  },
-  {
-    id: "pro",
-    name: "Professional Pack",
-    credits: 300,
-    price: "$25",
-    description: "Perfect for active bloggers and creators.",
-    features: [
-      "300 AI Generation Credits",
-      "Access to gpt-5-chat AI Writer",
-      "Full SEO Panel Settings",
-      "HTML Export Support",
-      "Premium Priority Support",
-      "Saves up to 15% on credits",
-    ],
-    recommended: true,
-  },
-  {
-    id: "business",
-    name: "Business Pack",
-    credits: 750,
-    price: "$50",
-    description: "For agencies and high-volume publishers.",
-    features: [
-      "750 AI Generation Credits",
-      "Access to gpt-5-chat AI Writer",
-      "Full SEO Panel Settings",
-      "HTML Export Support",
-      "Dedicated 24/7 Support",
-      "Saves up to 33% on credits",
-    ],
-  },
+const PLANS = [
+  { id: "basic", name: "Basic Pack", price: "$5", credits: 100, description: "Perfect for testing custom prompts and exploring styles." },
+  { id: "standard", name: "Standard Pack", price: "$10", credits: 250, description: "Ideal for regular creators wanting high resolution outputs." },
+  { id: "pro", name: "Professional Pack", price: "$20", credits: 600, description: "Designed for power users demanding batch exports and high speed.", popular: true },
+  { id: "business", name: "Business Pack", price: "$50", credits: 2000, description: "Maximum value pack for agency workflows and large volume generations." }
 ];
 
-function PricingContent() {
-  const { data: session } = useSession();
-  const searchParams = useSearchParams();
-  
-  const success = searchParams.get("success");
-  const canceled = searchParams.get("canceled");
-
-  const [loadingPlan, setLoadingPlan] = useState("");
-  const [errorMsg, setErrorMsg] = useState("");
+export default function Pricing() {
+  const { data: session, status } = useSession();
+  const [loadingPlan, setLoadingPlan] = useState(null);
 
   const handleCheckout = async (planId) => {
-    if (!session) {
-      signIn("google");
+    if (status !== "authenticated") {
+      toast.error("You must sign in with Google to purchase credit packages.");
       return;
     }
 
     setLoadingPlan(planId);
-    setErrorMsg("");
-
     try {
-      const res = await fetch("/api/stripe/checkout", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ planId }),
-      });
-
-      if (!res.ok) {
-        throw new Error("Failed to initialize checkout session");
-      }
-
-      const { url } = await res.json();
-      if (url) {
-        window.location.href = url;
+      const { data } = await axios.post("/api/checkout", { planId });
+      if (data.url) {
+        window.location.href = data.url;
       } else {
-        throw new Error("No checkout URL returned");
+        throw new Error("No redirection URL returned");
       }
-    } catch (e) {
-      setErrorMsg(e.message || "An error occurred during checkout initialization.");
-      setLoadingPlan("");
+    } catch (err) {
+      console.error(err);
+      toast.error(err.response?.data?.error || "Failed to trigger Stripe checkout session.");
+    } finally {
+      setLoadingPlan(null);
     }
   };
 
   return (
-    <div className="flex-1 overflow-y-auto bg-slate-50 dark:bg-slate-950 py-12 px-6">
-      <div className="max-w-5xl mx-auto flex flex-col gap-10">
-        
-        {/* Header Title */}
-        <div className="text-center max-w-xl mx-auto">
-          <h1 className="text-3xl md:text-4xl font-extrabold text-slate-900 dark:text-white leading-tight">
-            Flexible Credit Plans
-          </h1>
-          <p className="text-sm text-slate-500 mt-2">
-            Purchase credits to generate high-quality, SEO-optimized blog posts powered by OpenAI's advanced gpt-5-chat model.
+    <div className="flex min-h-dvh flex-col bg-bg-page select-none text-primary-text overflow-hidden">
+      <Toaster position="top-right" />
+      <Navbar />
+
+      <main className="flex-1 max-w-7xl w-full mx-auto px-4 py-12 sm:px-6 lg:px-8 flex flex-col gap-10 overflow-y-auto scrollbar-subtle items-center">
+        <div className="text-center space-y-4">
+          <div className="inline-flex items-center gap-2 px-3 py-1 bg-primary/10 border border-primary/20 rounded-full mb-1">
+            <FaInfoCircle className="text-primary text-xs" />
+            <span className="text-[10px] font-black text-primary uppercase tracking-widest">Pricing Plans</span>
+          </div>
+          <h1 className="text-3xl sm:text-4xl font-black tracking-tight uppercase">Buy Credits Packs</h1>
+          <p className="text-xs sm:text-sm text-secondary-text max-w-lg leading-relaxed">
+            Purchase flexible credit packages to perform high-resolution predictions. Keep all profits — we handle AI infrastructure.
           </p>
         </div>
 
-        {/* Alerts for Stripe Redirect callback */}
-        {success && (
-          <div className="p-4 bg-emerald-50 border border-emerald-200 rounded-2xl text-emerald-800 flex items-center gap-3 shadow-sm max-w-xl mx-auto">
-            <FaCheckCircle className="text-emerald-500 text-lg flex-shrink-0" />
-            <div>
-              <span className="font-bold text-sm">Purchase Complete!</span>
-              <p className="text-xs text-emerald-700 mt-0.5">Your credits have been added successfully. You can now use them to write articles.</p>
-            </div>
-          </div>
-        )}
-
-        {canceled && (
-          <div className="p-4 bg-amber-50 border border-amber-200 rounded-2xl text-amber-800 flex items-center gap-3 shadow-sm max-w-xl mx-auto">
-            <FaTimesCircle className="text-amber-500 text-lg flex-shrink-0" />
-            <div>
-              <span className="font-bold text-sm">Purchase Canceled</span>
-              <p className="text-xs text-amber-700 mt-0.5">The checkout session was canceled. No charges were made.</p>
-            </div>
-          </div>
-        )}
-
-        {errorMsg && (
-          <div className="p-4 bg-red-50 border border-red-200 rounded-2xl text-red-800 flex items-center gap-3 shadow-sm max-w-xl mx-auto">
-            <FaTimesCircle className="text-red-500 text-lg flex-shrink-0" />
-            <span className="text-xs">{errorMsg}</span>
-          </div>
-        )}
-
-        {/* Pricing Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          {plans.map((plan) => (
-            <div 
+        {/* Pricing Cards Grid */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 w-full max-w-5xl">
+          {PLANS.map((plan) => (
+            <div
               key={plan.id}
-              className={`bg-white dark:bg-slate-900 border rounded-3xl p-8 flex flex-col relative transition-all duration-300 hover:shadow-xl ${
-                plan.recommended 
-                  ? "border-indigo-600 dark:border-indigo-500 shadow-md ring-2 ring-indigo-600/10 scale-102" 
-                  : "border-slate-200 dark:border-slate-800"
+              className={`relative bg-bg-card border rounded-lg p-6 flex flex-col justify-between gap-6 transition-all duration-300 hover:shadow-2xl hover:-translate-y-1 ${
+                plan.popular ? "border-primary shadow-xl shadow-primary/5 scale-105" : "border-divider/50 shadow-md"
               }`}
             >
-              {plan.recommended && (
-                <span className="absolute top-0 right-1/2 translate-x-1/2 -translate-y-1/2 bg-indigo-600 text-white text-[10px] font-extrabold uppercase tracking-widest px-3 py-1 rounded-full shadow-sm">
+              {plan.popular && (
+                <span className="absolute -top-3 left-1/2 -translate-x-1/2 bg-primary text-white text-[9px] font-black uppercase px-3 py-1 rounded-full tracking-wider shadow">
                   Most Popular
                 </span>
               )}
 
-              <div className="mb-6">
-                <h3 className="text-base font-extrabold text-slate-900 dark:text-white">{plan.name}</h3>
-                <p className="text-xs text-slate-400 mt-1">{plan.description}</p>
-                <div className="flex items-baseline gap-1 mt-4">
-                  <span className="text-3xl font-black text-slate-950 dark:text-white">{plan.price}</span>
-                  <span className="text-xs text-slate-400 font-medium">one-time</span>
+              <div className="space-y-4">
+                <div className="space-y-1">
+                  <h3 className="text-sm font-extrabold uppercase tracking-wide text-primary-text">{plan.name}</h3>
+                  <p className="text-2xl font-black tracking-tight text-white">{plan.price}</p>
                 </div>
-              </div>
-
-              {/* Credit Badge */}
-              <div className="flex items-center gap-2 p-3 bg-amber-50 dark:bg-slate-950/40 rounded-2xl border border-amber-200/50 mb-6 shadow-inner">
-                <FaCoins className="text-amber-500 text-sm animate-bounce" />
-                <div>
-                  <span className="text-xs font-black text-amber-900 dark:text-amber-400">{plan.credits} AI Credits</span>
-                  <p className="text-[10px] text-amber-700 leading-tight">Write up to {Math.floor(plan.credits / 5)} full length articles.</p>
+                
+                <div className="text-xs bg-bg-page/50 border border-divider/30 p-3 rounded text-center font-extrabold text-primary">
+                  {plan.credits} Art Credits
                 </div>
-              </div>
 
-              {/* Features List */}
-              <ul className="flex-1 flex flex-col gap-3 mb-8">
-                {plan.features.map((feature, i) => (
-                  <li key={i} className="flex items-start gap-2.5 text-xs text-slate-600 dark:text-slate-400">
-                    <FaCheck className="text-indigo-600 dark:text-indigo-400 text-[10px] mt-0.5 flex-shrink-0" />
-                    <span>{feature}</span>
+                <p className="text-xs text-secondary-text leading-relaxed font-medium min-h-[3rem]">{plan.description}</p>
+                
+                <ul className="space-y-2 border-t border-divider/30 pt-4 text-xs font-semibold text-secondary-text">
+                  <li className="flex items-center gap-2">
+                    <FaCheck className="text-primary text-[10px]" />
+                    <span>Dynamic aspect ratios</span>
                   </li>
-                ))}
-              </ul>
+                  <li className="flex items-center gap-2">
+                    <FaCheck className="text-primary text-[10px]" />
+                    <span>HD image downloads</span>
+                  </li>
+                  <li className="flex items-center gap-2">
+                    <FaCheck className="text-primary text-[10px]" />
+                    <span>No subscription required</span>
+                  </li>
+                </ul>
+              </div>
 
-              {/* Action Button */}
               <button
-                type="button"
                 onClick={() => handleCheckout(plan.id)}
-                disabled={loadingPlan !== ""}
-                className={`w-full py-3.5 text-xs font-bold rounded-xl active:scale-[0.98] transition-all cursor-pointer flex items-center justify-center gap-1.5 shadow-sm ${
-                  plan.recommended 
-                    ? "bg-indigo-600 hover:bg-indigo-700 text-white hover:shadow-indigo-500/10" 
-                    : "bg-slate-100 hover:bg-slate-200 text-slate-800 dark:bg-slate-800 dark:hover:bg-slate-700 dark:text-white"
+                disabled={loadingPlan !== null}
+                className={`w-full py-3 rounded-full text-xs font-bold transition-all shadow-md cursor-pointer select-none active:scale-[0.98] ${
+                  plan.popular ? "bg-primary text-white hover:bg-primary-hover shadow-primary/15" : "bg-bg-page hover:bg-bg-card text-primary-text border border-divider"
                 }`}
               >
-                {loadingPlan === plan.id ? (
-                  <FaSpinner className="animate-spin" />
-                ) : (
-                  <span>Buy Credits</span>
-                )}
+                {loadingPlan === plan.id ? "Loading checkout..." : "Purchase Credits"}
               </button>
             </div>
           ))}
         </div>
-      </div>
-    </div>
-  );
-}
+      </main>
 
-export default function PricingPage() {
-  return (
-    <Suspense fallback={
-      <div className="flex-1 flex items-center justify-center bg-slate-50 dark:bg-slate-950">
-        <FaSpinner className="text-4xl text-indigo-600 animate-spin" />
-      </div>
-    }>
-      <PricingContent />
-    </Suspense>
+      <Footer />
+    </div>
   );
 }
