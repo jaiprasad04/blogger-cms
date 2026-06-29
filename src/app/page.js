@@ -245,13 +245,8 @@ function BlogEditorContent() {
 
   // Poll status from backend
   const pollStatus = (requestId) => {
-    let attempts = 0;
+    setStatusMessage("Writing blog post content...");
     const interval = setInterval(async () => {
-      attempts++;
-      setStatusMessage(
-        `Writing blog post content (Polling attempt ${attempts})...`,
-      );
-
       try {
         const res = await fetch(`/api/generate/status?requestId=${requestId}`);
         if (!res.ok) throw new Error("Failed to check status");
