@@ -20,7 +20,11 @@ import {
   FaQuestionCircle,
   FaInfoCircle,
 } from "react-icons/fa";
-import { RichTextEditor } from "@/components/RichTextEditor";
+import dynamic from "next/dynamic";
+const RichTextEditor = dynamic(
+  () => import("@/components/RichTextEditor").then((mod) => mod.RichTextEditor),
+  { ssr: false }
+);
 import clsx from "clsx";
 
 function BlogEditorContent() {
